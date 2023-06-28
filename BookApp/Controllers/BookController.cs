@@ -93,8 +93,7 @@ namespace BookApp.Controllers
                 
 
             var book = await  _dbcontext.Books.FindAsync(id);
-            Console.WriteLine(book);
-            Console.ReadKey();
+           
 
             if (book != null)
             {
