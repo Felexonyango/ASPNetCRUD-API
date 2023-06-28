@@ -42,7 +42,7 @@ namespace BookApp.Controllers
             return book;
 
         }
-        [HttpPost]
+        [HttpPost("create")]
         public async  Task<ActionResult<Book>>CreateBook(Book book)
         {
 
@@ -53,6 +53,59 @@ namespace BookApp.Controllers
 
         }
 
+        [HttpPut("update/{id}")]
+        public async Task<ActionResult> UpdateBook(int id, Book book)
+        {
+            if(id != book.Id)
+            {
+                return BadRequest();
+            }
+            _dbcontext.Entry(book).State = EntityState.Modified;
+            try
+            {
+                await _dbcontext.SaveChangesAsync();
+
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!checkBookAvailable(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return Ok();
+        }
+        private bool checkBookAvailable(int id)
+        {
+            return _dbcontext.Books.Any(book => book.Id == id);
+        }
+
+        [HttpDelete("delete/{id}")]
+        public async Task<ActionResult> DeleteBook(int id)
+        {
+            if (_dbcontext.Books == null) {
+                return NotFound();
+            }
+                
+
+            var book = await  _dbcontext.Books.FindAsync(id);
+            Console.WriteLine(book);
+            Console.ReadKey();
+
+            if (book != null)
+            {
+                return NotFound();
+
+            }
+            _dbcontext.Books.Remove(book);
+            await _dbcontext.SaveChangesAsync();
+
+            return Ok();
+        }
 
 
     }
