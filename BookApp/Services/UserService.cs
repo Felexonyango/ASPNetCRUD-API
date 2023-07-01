@@ -20,8 +20,6 @@ namespace BookApp.Services
             _dbContext = Context;
             _configuration = configuration;
         }
-
-
         public User AuthenticateUser(User user)
         {
             User Iuser = null;
@@ -36,7 +34,10 @@ namespace BookApp.Services
             return user;
         }
   
-
+       public User? GetById(int id){
+        return _dbContext.Users.FirstOrDefault(u => u.Id == id);
+        
+    }
     }
 
 }

@@ -10,26 +10,71 @@ using BookApp.Context;
 using BookApp.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+
 namespace BookApp.auth
 {
     public class JwtUtil
     {
+
+        // public int? ValidateJwtToken(string? token);
         private readonly IConfiguration _configuration;
         public JwtUtil(IConfiguration configuration)
         {
 
             _configuration = configuration;
         }
-        public string GenerateToken(User user)
+
+
+
+public string GenerateToken(User user)
+    {
+        // generate token that is valid for 7 days
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:key"]);
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:key"]));
-            var credetials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], null, expires: DateTime.Now.AddMinutes(1),
-            signingCredentials: credetials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-
-        }
-
+            Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
+            Expires = DateTime.UtcNow.AddDays(7),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
+
+    public int? ValidateJwtToken(string? token)
+    {
+        if (token == null)
+            return null;
+ 
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:key"]);
+        try
+        {
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+               
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var userId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+
+            // return user id from JWT token if validation successful
+            return userId;
+        }
+        catch
+        {
+            // return null if validation fails
+            return null;
+        }
+    }
+}
+       
+
+    
 }
