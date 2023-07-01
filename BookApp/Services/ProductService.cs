@@ -1,8 +1,5 @@
 ﻿using BookApp.Context;
 using BookApp.Models;
-
-
-
 namespace BookApp.Services
 {
     public class ProductService
