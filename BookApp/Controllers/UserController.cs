@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BookApp.auth;
 using BookApp.Models;
 using BookApp.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -17,12 +18,12 @@ namespace BookApp.Controllers
     public class UserController : ControllerBase
     {
         private UserService _userService;
-        private readonly IConfiguration _configuration;
-
-        public UserController(UserService userService, IConfiguration configuration)
+        private JwtUtil _jwtUtil;
+      
+        public UserController(UserService userService, JwtUtil jwtUtil)
         {
             _userService = userService;
-            _configuration = configuration;
+            _jwtUtil = jwtUtil;
         }
 
         [AllowAnonymous]
@@ -35,7 +36,7 @@ namespace BookApp.Controllers
             
             if (authenticatedUser != null)
             {
-                var token = _userService.GenerateToken(authenticatedUser);
+                var token = _jwtUtil.GenerateToken(authenticatedUser);
                 response = Ok(new { token });
             }
             

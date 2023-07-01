@@ -35,16 +35,7 @@ namespace BookApp.Services
             }
             return user;
         }
-        public string GenerateToken(User user) {
-            var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:key"]));
-            var credetials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], null, expires: DateTime.Now.AddMinutes(1),
-            signingCredentials: credetials);
-
-             return new JwtSecurityTokenHandler().WriteToken(token);
-             
-        }
-
+  
 
     }
 

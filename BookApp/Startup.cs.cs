@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Microsoft.OpenApi.Models;
 using System.Text;
+using BookApp.auth;
 
 namespace BookApp
 {
@@ -45,7 +46,8 @@ namespace BookApp
 
             services.AddTransient<ProductService>();
             services.AddTransient<UserService>();
-
+            services.AddScoped<JwtUtil>();
+ 
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
