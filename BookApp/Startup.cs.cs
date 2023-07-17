@@ -1,14 +1,14 @@
 ﻿using BookApp.Context;
 using BookApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
-
-using Microsoft.OpenApi.Models;
 using System.Text;
 using BookApp.auth;
 using BookApp.Extensions;
+using AutoMapper;
+using BookApp.Models;
+using BookApp.DTos;
 
 namespace BookApp
 {
@@ -40,7 +40,12 @@ namespace BookApp
             };
             
             });
+       
+        var autoMapping = new AutoMapping();
+        var mapperConfig = autoMapping.Configure();
+        IMapper mapper = mapperConfig.CreateMapper();
 
+        services.AddSingleton(mapper);
 
             // Configure DBContext with Postgresql
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(ConnectionString));
