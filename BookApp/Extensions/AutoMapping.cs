@@ -11,6 +11,7 @@ namespace BookApp.Extensions
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<BookDto, Book>();
+                cfg.CreateMap<ProductDtos,Product>();
             });
 
             return config;

@@ -3,6 +3,9 @@ using BookApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BookApp.Errors;
+using AutoMapper;
+using BookApp.DTos;
+
 
 
 namespace BookApp.Controllers
@@ -12,39 +15,44 @@ namespace BookApp.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        private readonly IMapper _mapper;
         public ProductService _productService;
 
-        public ProductController(ProductService productService)
+        public ProductController(ProductService productService, IMapper mapper)
         {
             _productService = productService;
+            _mapper = mapper;
 
         }
         [HttpPost("create-product")]
-        public async Task<ActionResult<Product>> AddProduct(Product product)
+        public async Task<ActionResult<Product>> AddProduct(ProductDtos productdto)
         {
 
+            var product = _mapper.Map<Product>(productdto);
             await _productService.AddProduct(product);
 
             return Ok();
         }
         [Authorize]
         [HttpGet("allproducts")]
-        public async Task<ActionResult> GetAllProducts()
+        public async Task<ActionResult<IEnumerable<ProductDtos>>> GetAllProducts()
         {
-            var allproducts =  await _productService.GetAllProducts();
 
-            return Ok(allproducts);
+            var allproducts = await _productService.GetAllProducts();
+            var productDtos = _mapper.Map<IEnumerable<ProductDtos>>(allproducts);
+
+            return Ok(productDtos);
         }
         [HttpGet("getProduct/{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductDtos>> GetProduct(int id)
         {
             var product = await _productService.GetProductById(id);
-
+           var productdto = _mapper.Map<ProductDtos>(product);
             if (product == null) return NotFound(new ApiResponse(404));
             var responseBody = new
             {
                 message = "Successfully retrieved product",
-                result = product
+                result = productdto
             };
 
             return Ok(responseBody);
@@ -64,7 +72,7 @@ namespace BookApp.Controllers
         {
 
             if (product == null) return NotFound(new ApiResponse(404));
-             await _productService.Update(product, id);
+            await _productService.Update(product, id);
             return Ok();
         }
 
