@@ -31,43 +31,40 @@ namespace BookApp.Controllers
 
         }
 
-        [HttpPost("signup")]
-        public IActionResult SignUp(User user)
-        {
-            var token = _userService.CreateUser(user);
+     [HttpPost("signup")]
+public async Task<IActionResult> SignUp(User user)
+{
+    var token = await _userService.CreateUser(user);
 
-            // Build the response body
-            var responseBody = new
-            {
-                Message = "User created successfully",
-                Token = token
-            };
+    // Build the response body
+    var responseBody = new
+    {
+        Message = "User created successfully",
+        Token = token
+    };
 
+    return Ok(responseBody);
+}
 
-            return Ok(responseBody);
-        }
+      [HttpPost("login")]
+public async Task<IActionResult> Login(User user)
+{
+    var token = await _userService.LoginUser(user.Email, user.Password);
 
-        [HttpPost("login")]
-        public IActionResult Login(User user)
-        {
-            var token = _userService.LoginUser(user.Email, user.Password);
+    var responseBody = new
+    {
+        Message = "User Logged in successfully",
+        Token = token
+    };
 
+    if (token == null) 
+    {
+        return BadRequest(new ApiResponse(400));
+    }
 
-            var responseBody = new
-            {
-                Message = "User Logged in  successfully",
-                Token = token
-            };
+    return Ok(responseBody);
+}
 
-
-            if (token == null) return BadRequest(new ApiResponse(400));
-
-
-            return Ok(responseBody);
-
-
-
-        }
        
 
 

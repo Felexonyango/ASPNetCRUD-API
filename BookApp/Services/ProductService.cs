@@ -54,25 +54,25 @@ namespace BookApp.Services
             return result;
         }
 
-        public async Task<ActionResult<Product>> Update(Product product, int Id)
-        {
-            var _product = await _dbContext.Products.FindAsync(Id);
-            if (_product != null)
-            {
-                _product.Name = product.Name;
-                _product.Description = product.Description;
-                _product.Price = product.Price;
-                _product.ImageURLs = product.ImageURLs;
-                _product.SoldAmount = product.SoldAmount;
-                _product.StockAmount = product.StockAmount;
-                _product.CategoryId = product.CategoryId;
+      public async Task<ActionResult<Product?>> Update(Product product, int Id)
+{
+    var _product = await _dbContext.Products.FindAsync(Id);
+    if (_product != null)
+    {
+        _product.Name = product.Name;
+        _product.Description = product.Description;
+        _product.Price = product.Price;
+        _product.ImageURLs = product.ImageURLs;
+        _product.SoldAmount = product.SoldAmount;
+        _product.StockAmount = product.StockAmount;
+        _product.CategoryId = product.CategoryId;
 
-               await _dbContext.Products.AddAsync(_product);
-              await _dbContext.SaveChangesAsync();
-            
-            }
-            return _product;
-        }
+        _dbContext.Update(_product);
+        await _dbContext.SaveChangesAsync();
+    }
+    return _product;
+}
+
     }
    
 }
