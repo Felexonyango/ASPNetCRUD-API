@@ -9,9 +9,12 @@ namespace BookApp.Extensions
         public MapperConfiguration Configure()
         {
             var config = new MapperConfiguration(cfg =>
+
             {
                 cfg.CreateMap<BookDto, Book>();
-                cfg.CreateMap<ProductDtos,Product>();
+
+                
+                cfg.CreateMap<ProductDtos, Product>();
             });
 
             return config;

@@ -24,15 +24,19 @@ namespace BookApp.Controllers
             _mapper = mapper;
 
         }
-        [HttpPost("create-product")]
-        public async Task<ActionResult<Product>> AddProduct(ProductDtos productdto)
-        {
+        
+ [HttpPost("create-product")]
+public async Task<ActionResult<ProductDtos>> AddProduct(ProductDtos productDto)
+{
+    var product = _mapper.Map<Product>(productDto);
+    
+    await _productService.AddProduct(product);
 
-            var product = _mapper.Map<Product>(productdto);
-            await _productService.AddProduct(product);
+    return Ok();
+}
 
-            return Ok();
-        }
+
+
         [Authorize]
         [HttpGet("allproducts")]
         public async Task<ActionResult<IEnumerable<ProductDtos>>> GetAllProducts()
@@ -47,7 +51,7 @@ namespace BookApp.Controllers
         public async Task<ActionResult<ProductDtos>> GetProduct(int id)
         {
             var product = await _productService.GetProductById(id);
-           var productdto = _mapper.Map<ProductDtos>(product);
+            var productdto = _mapper.Map<ProductDtos>(product);
             if (product == null) return NotFound(new ApiResponse(404));
             var responseBody = new
             {

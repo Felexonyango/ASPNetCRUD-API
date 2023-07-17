@@ -1,4 +1,6 @@
-﻿using BookApp.Context;
+﻿using AutoMapper;
+using BookApp.Context;
+using BookApp.DTos;
 using BookApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,52 +9,62 @@ namespace BookApp.Services
 {
     public class ProductService
     {
-
+         private readonly IMapper _mapper;
         private ApplicationDbContext _dbContext;
-        public ProductService(ApplicationDbContext context)
+        public ProductService(ApplicationDbContext context,IMapper mapper)
         {
             _dbContext = context;
+             _mapper = mapper;
         }
-        public async Task<ActionResult<Product>> AddProduct(Product product){
-            var _product = new Product()
-            {
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                ImageURLs = product.ImageURLs,
-                SoldAmount = product.SoldAmount,
-                StockAmount = product.StockAmount,
-                CategoryId = product.CategoryId
-            };
+public async Task<Product> AddProduct(Product product)
+{
+   
+    await _dbContext.Products.AddAsync(product);
+    await _dbContext.SaveChangesAsync();
 
-           await  _dbContext.Products.AddAsync(_product);
-          await  _dbContext.SaveChangesAsync();
-          return product;
-        }
-        public void DeleteProduct(int Id)
-        {
-            var _product = _dbContext.Products.FirstOrDefault(product => product.Id == Id);
-            if (_product != null)
-            {
-                _dbContext.Products.Remove(_product);
+    return product;
+}
 
-                _dbContext.SaveChanges();
-            }
-        }
+public async Task<ActionResult<IEnumerable<ProductDtos>>> GetAllProducts()
+{
+    var products = await _dbContext.Products.ToListAsync();
+    var ProductDtoss = _mapper.Map<IEnumerable<ProductDtos>>(products);
 
-        public async Task<ActionResult<IEnumerable<Product>>> GetAllProducts()
-        {
-              
-              return await _dbContext.Products.ToListAsync();
-        
-        }
+    return ProductDtoss.ToList();
+}
 
-        public async Task<ActionResult<Product>> GetProductById(int Id)
-        {
-            
-            var result  =  await _dbContext.Products.FindAsync(Id);
-            return result;
-        }
+public async Task<ActionResult<ProductDtos>> GetProductById(int Id)
+{
+    var product = await _dbContext.Products.FindAsync(Id);
+    var ProductDtos = _mapper.Map<ProductDtos>(product);
+
+    return ProductDtos;
+}
+
+public async Task<ActionResult<ProductDtos>> Update(ProductDtos productDto, int Id)
+{
+    var product = await _dbContext.Products.FindAsync(Id);
+
+  
+     _mapper.Map(productDto, product);
+
+    _dbContext.Update(product);
+    await _dbContext.SaveChangesAsync();
+
+    return productDto;
+}
+
+public void DeleteProduct(int Id)
+{
+    var product = _dbContext.Products.FirstOrDefault(product => product.Id == Id);
+
+    if (product != null)
+    {
+        _dbContext.Products.Remove(product);
+        _dbContext.SaveChanges();
+    }
+}
+
 
       public async Task<ActionResult<Product?>> Update(Product product, int Id)
 {
@@ -73,6 +85,7 @@ namespace BookApp.Services
     return _product;
 }
 
+        
     }
    
 }
