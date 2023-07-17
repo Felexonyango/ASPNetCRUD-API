@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
+using BCrypt.Net;
 using System.Threading.Tasks;
 using BookApp.auth;
 using BookApp.Context;
 using BookApp.Models;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -15,22 +17,26 @@ namespace BookApp.Services
 {
     public class UserService
     {
+         private readonly ILogger<UserService> _logger;
         private ApplicationDbContext _dbContext;
         private  JwtUtil  _jwtUtil;
-        public UserService(ApplicationDbContext Context, JwtUtil util)
+        public UserService(ApplicationDbContext Context, JwtUtil util,ILogger<UserService>logger)
         {
             _dbContext = Context;
             _jwtUtil = util;
+              _logger = logger;
         }
 
 
   public  string  CreateUser(User user){
+    // if(checkEmailExist(user.Email)){}
     var newUser = new User
     {
         Name = user.Name,
         Email = user.Email,
-        Password = user.Password
+         Password = BCrypt.Net.BCrypt.HashPassword(user.Password),
     };
+    
 
     _dbContext.Users.Add(newUser);
     _dbContext.SaveChanges();
@@ -42,27 +48,28 @@ namespace BookApp.Services
    
   }
 
-    // Return the response with the token and body
- 
+    public string LoginUser(string email, string password)
+   {
+            var _user = _dbContext.Users.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
 
-        public User AuthenticateUser(User user)
-        {
-            User Iuser = null;
-            if (user.Name == "admin" && user.Password == "1234")
+        var isPasswordValid = BCrypt.Net.BCrypt.Verify(password, _user.Password);
+
+            if (_user != null && isPasswordValid)
             {
-                Iuser = new User
-                {
-                    Name = "Felex",
-                    Password = "12345"
-                };
+                var token = _jwtUtil.GenerateToken(_user);
+
+                return token;
+
             }
-            return user;
-        }
-   
+            return null;
+
+
+        }    
        public User? GetById(int id){
         return _dbContext.Users.FirstOrDefault(u => u.Id == id);
         
     }
+       
     }
 
 }

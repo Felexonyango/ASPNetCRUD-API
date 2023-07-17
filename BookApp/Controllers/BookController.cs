@@ -3,10 +3,12 @@ using BookApp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Authorization;
+using BookApp.Errors;
 namespace BookApp.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
+     [Route("api/[controller]")]
     [ApiController]
     public class BookController : ControllerBase
     {
@@ -16,30 +18,39 @@ namespace BookApp.Controllers
             _dbcontext = context;
 
         }
-        [HttpGet]
+        [HttpGet("allbooks")]
         public async Task<ActionResult<IEnumerable<Book>>>GetBooks(){
 
-            if (_dbcontext.Books == null) {
-                return NotFound();
-            }
-            return await _dbcontext.Books.ToListAsync();
+            if (_dbcontext.Books == null)  return NotFound(new ApiResponse(404));
+
+               var books =  await _dbcontext.Books.ToListAsync();
+                 var responseBody = new
+            {
+                message = "Successfully retrieved all books",
+                result = books
+            };
+         
+            return Ok(responseBody);
+            
 
 }
-        [HttpGet("{id}")]
+        [HttpGet("getbook/{id}")]
         public async Task<ActionResult<Book>> GetBook(int id)
         {
 
-            if (_dbcontext.Books == null)
-            {
-                return NotFound();
-            }
+            if (_dbcontext.Books == null)  return NotFound(new ApiResponse(404));
+           
             var book = await _dbcontext.Books.FindAsync(id);
-            if(book == null)
+            if(book == null) return NotFound(new ApiResponse(404));
+           
+               var responseBody = new
             {
-                return NotFound();
-            }
-
-            return book;
+                message = "Successfully retrieved product",
+                result = book
+            };
+         
+            return Ok(responseBody);
+          
 
         }
         [HttpPost("create")]
@@ -56,10 +67,8 @@ namespace BookApp.Controllers
         [HttpPut("update/{id}")]
         public async Task<ActionResult> UpdateBook(int id, Book book)
         {
-            if(id != book.Id)
-            {
-                return BadRequest();
-            }
+            if(id != book.Id) return BadRequest(new ApiResponse(400));
+          
             _dbcontext.Entry(book).State = EntityState.Modified;
             try
             {
@@ -68,14 +77,9 @@ namespace BookApp.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!checkBookAvailable(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                if (!checkBookAvailable(id)) return NotFound(new ApiResponse(400));
+               
+               
             }
             return Ok();
         }
@@ -84,22 +88,14 @@ namespace BookApp.Controllers
             return _dbcontext.Books.Any(book => book.Id == id);
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("deletebook/{id}")]
         public async Task<ActionResult> DeleteBook(int id)
         {
-            if (_dbcontext.Books == null) {
-                return NotFound();
-            }
-                
-
+            if (_dbcontext.Books == null) return NotFound(new ApiResponse(404));
+            
             var book = await  _dbcontext.Books.FindAsync(id);
+            if (book != null) return NotFound(new ApiResponse(400));
            
-
-            if (book != null)
-            {
-                return NotFound();
-
-            }
             _dbcontext.Books.Remove(book);
             await _dbcontext.SaveChangesAsync();
 

@@ -1,13 +1,13 @@
 ﻿using BookApp.Models;
 using BookApp.Services;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using BookApp.Errors;
+
+
 namespace BookApp.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController : ControllerBase
@@ -20,38 +20,51 @@ namespace BookApp.Controllers
 
         }
         [HttpPost("create-product")]
-        public IActionResult AddProduct(Product product)
+        public async Task<ActionResult<Product>> AddProduct(Product product)
         {
-           /* var model = Newtonsoft.Json.JsonConvert.DeserializeObject<Product>(jsonText);*/
-            _productService.AddProduct(product);
+
+            await _productService.AddProduct(product);
 
             return Ok();
         }
-
+        [Authorize]
         [HttpGet("allproducts")]
-        public IActionResult GetAllProducts()
+        public async Task<ActionResult> GetAllProducts()
         {
-            var allproducts = _productService.GetAllProducts();
+            var allproducts =  await _productService.GetAllProducts();
+
             return Ok(allproducts);
         }
-        [HttpGet("{id}")]
-        public IActionResult GetProduct(int id)
+        [HttpGet("getProduct/{id}")]
+        public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var product = _productService.GetProductById(id);
-              return Ok(product);
+            var product = await _productService.GetProductById(id);
+
+            if (product == null) return NotFound(new ApiResponse(404));
+            var responseBody = new
+            {
+                message = "Successfully retrieved product",
+                result = product
+            };
+
+            return Ok(responseBody);
+
         }
 
         [HttpDelete("delete/{id}")]
-      
+
         public IActionResult DeletProductById(int id)
         {
+
             _productService.DeleteProduct(id);
             return Ok();
         }
         [HttpPut("update-product/{id}")]
-        public IActionResult UpdateProductById([FromBody] Product product, int id)
+        public async Task<ActionResult<Product>> UpdateProductById([FromBody] Product product, int id)
         {
-            _productService.Update(product, id);
+
+            if (product == null) return NotFound(new ApiResponse(404));
+             await _productService.Update(product, id);
             return Ok();
         }
 

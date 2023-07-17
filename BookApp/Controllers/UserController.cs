@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Threading.Tasks;
 using BookApp.auth;
+using BookApp.Errors;
 using BookApp.Models;
 using BookApp.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -11,12 +13,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
+
 namespace BookApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
+
         private UserService _userService;
         private JwtUtil _jwtUtil;
 
@@ -24,6 +28,7 @@ namespace BookApp.Controllers
         {
             _userService = userService;
             _jwtUtil = jwtUtil;
+
         }
 
         [HttpPost("signup")]
@@ -38,23 +43,33 @@ namespace BookApp.Controllers
                 Token = token
             };
 
+
             return Ok(responseBody);
         }
-        [AllowAnonymous]
+
         [HttpPost("login")]
         public IActionResult Login(User user)
         {
-            IActionResult response = Unauthorized();
+            var token = _userService.LoginUser(user.Email, user.Password);
 
-            var authenticatedUser = _userService.AuthenticateUser(user);
 
-            if (authenticatedUser != null)
+            var responseBody = new
             {
-                var token = _jwtUtil.GenerateToken(authenticatedUser);
-                response = Ok(new { token });
-            }
+                Message = "User Logged in  successfully",
+                Token = token
+            };
 
-            return response;
+
+            if (token == null) return BadRequest(new ApiResponse(400));
+
+
+            return Ok(responseBody);
+
+
+
         }
+       
+
+
     }
 }

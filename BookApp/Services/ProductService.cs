@@ -1,5 +1,8 @@
 ﻿using BookApp.Context;
 using BookApp.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 namespace BookApp.Services
 {
     public class ProductService
@@ -10,7 +13,7 @@ namespace BookApp.Services
         {
             _dbContext = context;
         }
-        public void AddProduct(Product product){
+        public async Task<ActionResult<Product>> AddProduct(Product product){
             var _product = new Product()
             {
                 Name = product.Name,
@@ -22,8 +25,9 @@ namespace BookApp.Services
                 CategoryId = product.CategoryId
             };
 
-            _dbContext.Products.Add(_product);
-            _dbContext.SaveChanges();
+           await  _dbContext.Products.AddAsync(_product);
+          await  _dbContext.SaveChangesAsync();
+          return product;
         }
         public void DeleteProduct(int Id)
         {
@@ -36,19 +40,23 @@ namespace BookApp.Services
             }
         }
 
-        public List<Product> GetAllProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetAllProducts()
         {
-            return _dbContext.Products.ToList();
+              
+              return await _dbContext.Products.ToListAsync();
+        
         }
 
-        public Product GetProductById(int Id)
+        public async Task<ActionResult<Product>> GetProductById(int Id)
         {
-            return _dbContext.Products.FirstOrDefault(product => product.Id == Id);
+            
+            var result  =  await _dbContext.Products.FindAsync(Id);
+            return result;
         }
 
-        public void Update(Product product, int Id)
+        public async Task<ActionResult<Product>> Update(Product product, int Id)
         {
-            var _product = _dbContext.Products.FirstOrDefault(product => product.Id == Id);
+            var _product = await _dbContext.Products.FindAsync(Id);
             if (_product != null)
             {
                 _product.Name = product.Name;
@@ -59,9 +67,11 @@ namespace BookApp.Services
                 _product.StockAmount = product.StockAmount;
                 _product.CategoryId = product.CategoryId;
 
-                _dbContext.Products.Add(_product);
-                _dbContext.SaveChanges();
+               await _dbContext.Products.AddAsync(_product);
+              await _dbContext.SaveChangesAsync();
+            
             }
+            return _product;
         }
     }
    

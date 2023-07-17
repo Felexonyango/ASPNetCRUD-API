@@ -99,11 +99,12 @@ namespace BookApp.Data.migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Password")
-                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
