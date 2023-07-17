@@ -29,7 +29,11 @@ namespace BookApp.Services
 
 
   public  string  CreateUser(User user){
-    // if(checkEmailExist(user.Email)){}
+      if (CheckEmailExist(user.Email))
+    {
+    
+        throw new Exception("Email already exists.");
+    }
     var newUser = new User
     {
         Name = user.Name,
@@ -47,6 +51,10 @@ namespace BookApp.Services
 
    
   }
+  private bool CheckEmailExist(string email)
+{
+    return _dbContext.Users.Any(u => u.Email.ToLower() == email.ToLower());
+}
 
     public string LoginUser(string email, string password)
    {
