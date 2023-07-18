@@ -1,17 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Logging;
-using System.Text;
-using System.Threading.Tasks;
 using BookApp.auth;
 using BookApp.Errors;
 using BookApp.Models;
 using BookApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 
 
 namespace BookApp.Controllers
@@ -64,9 +56,22 @@ public async Task<IActionResult> Login(User user)
 
     return Ok(responseBody);
 }
+    [Authorize]
+   [HttpGet("getCurrentUser")]
+   public async Task<IActionResult> GetCurrentUserAsync(){
 
-       
+    var user = await _userService.GetCurrentUser();
+        var responseBody = new
+    {
+        Message = "Current user found successfully",
+        user = user
+    };
+    return Ok(responseBody);
+
+   }    
 
 
     }
+
+    
 }

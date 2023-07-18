@@ -16,24 +16,25 @@ namespace BookApp.Services
             _dbContext = context;
              _mapper = mapper;
         }
-public async Task<Product> AddProduct(Product product)
+public async Task<Product> AddProduct(Product product,int userId)
 {
    
+     product.UserId = userId;
     await _dbContext.Products.AddAsync(product);
     await _dbContext.SaveChangesAsync();
 
     return product;
 }
 
-public async Task<ActionResult<IEnumerable<ProductDtos>>> GetAllProducts()
+public async Task<IEnumerable<Product>> GetAllProducts()
 {
     var products = await _dbContext.Products.ToListAsync();
-    var ProductDtoss = _mapper.Map<IEnumerable<ProductDtos>>(products);
-
-    return ProductDtoss.ToList();
+  
+    return products;
 }
 
-public async Task<ActionResult<ProductDtos>> GetProductById(int Id)
+
+public async Task<ProductDtos> GetProductById(int Id)
 {
     var product = await _dbContext.Products.FindAsync(Id);
     var ProductDtos = _mapper.Map<ProductDtos>(product);
@@ -41,7 +42,7 @@ public async Task<ActionResult<ProductDtos>> GetProductById(int Id)
     return ProductDtos;
 }
 
-public async Task<ActionResult<ProductDtos>> Update(ProductDtos productDto, int Id)
+public async Task<ProductDtos> Update(ProductDtos productDto, int Id)
 {
     var product = await _dbContext.Products.FindAsync(Id);
 
@@ -66,7 +67,7 @@ public void DeleteProduct(int Id)
 }
 
 
-      public async Task<ActionResult<Product?>> Update(Product product, int Id)
+      public async Task<Product?> Update(Product product, int Id)
 {
     var _product = await _dbContext.Products.FindAsync(Id);
     if (_product != null)

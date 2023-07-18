@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using BookApp.Errors;
 using AutoMapper;
 using BookApp.DTos;
+using Microsoft.AspNetCore.Http;
+
 
 
 
@@ -17,35 +19,50 @@ namespace BookApp.Controllers
     {
         private readonly IMapper _mapper;
         public ProductService _productService;
+        public UserService _userService;
 
-        public ProductController(ProductService productService, IMapper mapper)
+        public ProductController(
+            ProductService productService,
+         IMapper mapper,
+         UserService userService
+         )
         {
             _productService = productService;
             _mapper = mapper;
+            _userService = userService;
 
         }
-        
- [HttpPost("create-product")]
+
+
+  [HttpPost("create-product")]
 public async Task<ActionResult<ProductDtos>> AddProduct(ProductDtos productDto)
 {
     var product = _mapper.Map<Product>(productDto);
-    
-    await _productService.AddProduct(product);
+    var currentUser = await _userService.GetCurrentUser();
+
+    if (currentUser == null)
+    {
+        return Unauthorized(new ApiResponse(401, "User not authenticated."));
+    }
+
+    int currentUserId = currentUser.Id;
+
+    await _productService.AddProduct(product, currentUserId);
 
     return Ok();
 }
 
 
 
-        [Authorize]
+
+     
         [HttpGet("allproducts")]
-        public async Task<ActionResult<IEnumerable<ProductDtos>>> GetAllProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetAllProducts()
         {
 
             var allproducts = await _productService.GetAllProducts();
-            var productDtos = _mapper.Map<IEnumerable<ProductDtos>>(allproducts);
-
-            return Ok(productDtos);
+            
+            return Ok(allproducts);
         }
         [HttpGet("getProduct/{id}")]
         public async Task<ActionResult<ProductDtos>> GetProduct(int id)

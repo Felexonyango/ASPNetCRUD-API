@@ -49,7 +49,7 @@ namespace BookApp
 
             // Configure DBContext with Postgresql
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(ConnectionString));
-
+           services.AddHttpContextAccessor();
             services.AddTransient<ProductService>();
             services.AddTransient<UserService>();
             services.AddScoped<JwtUtil>();
@@ -69,7 +69,11 @@ namespace BookApp
                   app.UseSwaggerDocumentation();
             }
 
-            app.UseCors(options => options.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader());
+            app.UseCors(
+            options => 
+            options.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 
             app.UseHttpsRedirection();
 
