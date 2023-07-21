@@ -52,6 +52,7 @@ namespace BookApp
            services.AddHttpContextAccessor();
             services.AddTransient<ProductService>();
             services.AddTransient<UserService>();
+            services.AddTransient<PostService>();
             services.AddScoped<JwtUtil>();
  
 

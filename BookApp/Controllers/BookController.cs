@@ -2,24 +2,31 @@
 using BookApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 using BookApp.Errors;
 using AutoMapper;
 using BookApp.DTos;
+using BookApp.Services;
 
 namespace BookApp.Controllers
 {
-    
+
     [Route("api/[controller]")]
     [ApiController]
     public class BookController : ControllerBase
     {
+             public UserService _userService;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _dbcontext;
-        public BookController(ApplicationDbContext context, IMapper mapper)
+        public BookController(
+            ApplicationDbContext context, 
+        IMapper mapper,
+        UserService userService
+        
+        )
         {
             _dbcontext = context;
             _mapper = mapper;
+            _userService = userService;
 
         }
         [HttpGet("allbooks")]
@@ -63,6 +70,8 @@ namespace BookApp.Controllers
         [HttpPost("create")]
         public async Task<ActionResult<Book>> CreateBook(BookDto bookDto)
         {
+            var currentUser = await _userService.GetCurrentUser();
+            bookDto.UserId = currentUser.Id;
              var book = _mapper.Map<Book>(bookDto); // Map BookDto to Book entity
             _dbcontext.Books.Add(book);
             await _dbcontext.SaveChangesAsync();
