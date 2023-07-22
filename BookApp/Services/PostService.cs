@@ -1,19 +1,19 @@
-using AutoMapper;
+
 using BookApp.Context;
+using BookApp.DTos;
 using BookApp.Models;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookApp.Services
 {
     public class PostService
     {
-
-        private readonly IMapper _mapper;
         private ApplicationDbContext _dbContext;
-        public PostService(ApplicationDbContext context, IMapper mapper)
+        public PostService(ApplicationDbContext context)
         {
             _dbContext = context;
-            _mapper = mapper;
+        
         }
         public async Task<Post> AddPost(Post post, User user)
         {
@@ -35,15 +35,17 @@ namespace BookApp.Services
         }
 
 
-        public async Task<Post> GetPostById(int Id)
+        public async Task<PostDto> GetPostById(int id)
         {
-            var post = await _dbContext.Posts.FindAsync(Id);
+            var post = await _dbContext.Posts
+                .Include(post => post.PostedBy)
+                .Include(x => x.Comments)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
+            var postDto = post.Adapt<PostDto>();
 
-            return post;
+            return postDto;
         }
-
-
 
         public void deletePost(int Id)
         {

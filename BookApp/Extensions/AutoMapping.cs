@@ -1,23 +1,29 @@
-using AutoMapper;
+using Mapster;
 using BookApp.Models;
 using BookApp.DTos;
 
 namespace BookApp.Extensions
 {
-    public class AutoMapping:Profile
+    public static class MapsterConfig
     {
-        public MapperConfiguration Configure()
+        public static void Configure()
         {
-            var config = new MapperConfiguration(cfg =>
-
-            {
-                cfg.CreateMap<BookDto, Book>();
-
+            // Define the mappings using TypeAdapterConfig
+            TypeAdapterConfig<PostDto, Post>
+                .NewConfig()
+                .TwoWays()
+               .Ignore(dest => dest.Comments)
+                .Ignore(dest => dest.PostedBy);
                 
-                cfg.CreateMap<ProductDtos, Product>();
-            });
+            TypeAdapterConfig<BookDto, Book>
+                .NewConfig()
+                .TwoWays()
+                .MaxDepth(1); // Set the maximum depth to 1 to avoid circular references
 
-            return config;
+            TypeAdapterConfig<ProductDtos, Product>
+                .NewConfig()
+                .TwoWays()
+                .MaxDepth(1); // Set the maximum depth to 1 to avoid circular references
         }
     }
 }

@@ -1,92 +1,84 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using BookApp.Context;
 using BookApp.DTos;
 using BookApp.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookApp.Services
 {
     public class ProductService
     {
-         private readonly IMapper _mapper;
-        private ApplicationDbContext _dbContext;
-        public ProductService(ApplicationDbContext context,IMapper mapper)
+        private readonly ApplicationDbContext _dbContext;
+
+        public ProductService(ApplicationDbContext context)
         {
             _dbContext = context;
-             _mapper = mapper;
         }
-public async Task<Product> AddProduct(Product product,int userId)
-{
-   
-     product.UserId = userId;
-    await _dbContext.Products.AddAsync(product);
-    await _dbContext.SaveChangesAsync();
 
-    return product;
-}
+        public async Task<Product> AddProduct(Product product, int userId)
+        {
+            product.UserId = userId;
+            await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
 
-public async Task<IEnumerable<Product>> GetAllProducts()
-{
-    var products = await _dbContext.Products.ToListAsync();
-  
-    return products;
-}
+            return product;
+        }
 
+        public async Task<IEnumerable<Product>> GetAllProducts()
+        {
+            var products = await _dbContext.Products.ToListAsync();
 
-public async Task<ProductDtos> GetProductById(int Id)
-{
-    var product = await _dbContext.Products.FindAsync(Id);
-    var ProductDtos = _mapper.Map<ProductDtos>(product);
+            return products;
+        }
 
-    return ProductDtos;
-}
+        public async Task<ProductDtos> GetProductById(int Id)
+        {
+            var product = await _dbContext.Products.FindAsync(Id);
+            var productDtos = product.Adapt<ProductDtos>(); // Use Mapster for mapping
 
-public async Task<ProductDtos> Update(ProductDtos productDto, int Id)
-{
-    var product = await _dbContext.Products.FindAsync(Id);
+            return productDtos;
+        }
 
-  
-     _mapper.Map(productDto, product);
+        public async Task<ProductDtos> Update(ProductDtos productDto, int Id)
+        {
+            var product = await _dbContext.Products.FindAsync(Id);
 
-    _dbContext.Update(product);
-    await _dbContext.SaveChangesAsync();
+            productDto.Adapt(product); // Use Mapster for mapping
 
-    return productDto;
-}
+            _dbContext.Update(product);
+            await _dbContext.SaveChangesAsync();
 
-public void DeleteProduct(int Id)
-{
-    var product = _dbContext.Products.FirstOrDefault(product => product.Id == Id);
+            return productDto;
+        }
 
-    if (product != null)
-    {
-        _dbContext.Products.Remove(product);
-        _dbContext.SaveChanges();
+        public void DeleteProduct(int Id)
+        {
+            var product = _dbContext.Products.FirstOrDefault(product => product.Id == Id);
+
+            if (product != null)
+            {
+                _dbContext.Products.Remove(product);
+                _dbContext.SaveChanges();
+            }
+        }
+
+        public async Task<Product?> Update(Product product, int Id)
+        {
+            var _product = await _dbContext.Products.FindAsync(Id);
+            if (_product != null)
+            {
+                _product.Name = product.Name;
+                _product.Description = product.Description;
+                _product.Price = product.Price;
+                _product.ImageURLs = product.ImageURLs;
+                _product.SoldAmount = product.SoldAmount;
+                _product.StockAmount = product.StockAmount;
+                _product.CategoryId = product.CategoryId;
+
+                _dbContext.Update(_product);
+                await _dbContext.SaveChangesAsync();
+            }
+            return _product;
+        }
     }
-}
-
-
-      public async Task<Product?> Update(Product product, int Id)
-{
-    var _product = await _dbContext.Products.FindAsync(Id);
-    if (_product != null)
-    {
-        _product.Name = product.Name;
-        _product.Description = product.Description;
-        _product.Price = product.Price;
-        _product.ImageURLs = product.ImageURLs;
-        _product.SoldAmount = product.SoldAmount;
-        _product.StockAmount = product.StockAmount;
-        _product.CategoryId = product.CategoryId;
-
-        _dbContext.Update(_product);
-        await _dbContext.SaveChangesAsync();
-    }
-    return _product;
-}
-
-        
-    }
-   
 }

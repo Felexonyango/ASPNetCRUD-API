@@ -6,9 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using BookApp.auth;
 using BookApp.Extensions;
-using AutoMapper;
-using BookApp.Models;
-using BookApp.DTos;
+using Mapster;
 
 namespace BookApp
 {
@@ -27,34 +25,36 @@ namespace BookApp
 
         public void ConfigureServices(IServiceCollection services)
         {
-           //JWT Token Authentication
-           services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-           .AddJwtBearer( options =>{
-            options.TokenValidationParameters=new TokenValidationParameters{
-                ValidateIssuer=false,
-                ValidateAudience=false,
-                ValidateLifetime=true,
-                ValidIssuer=Configuration["Jwt:Issuer"],
-                ValidAudience=Configuration["Jwt:Audience"],
-                IssuerSigningKey =new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:key"]))
-            };
-            
-            });
-       
-        var autoMapping = new AutoMapping();
-        var mapperConfig = autoMapping.Configure();
-        IMapper mapper = mapperConfig.CreateMapper();
 
-        services.AddSingleton(mapper);
+            //JWT Token Authentication
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:key"]))
+                };
+
+            });
+
+            MapsterConfig.Configure(); // Call the method to register the mappings
+          
+
 
             // Configure DBContext with Postgresql
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(ConnectionString));
-           services.AddHttpContextAccessor();
+            services.AddHttpContextAccessor();
             services.AddTransient<ProductService>();
             services.AddTransient<UserService>();
             services.AddTransient<PostService>();
+            services.AddTransient<CommentService>();
             services.AddScoped<JwtUtil>();
- 
+
 
             services.AddControllers();
             services.AddSwaggerDocumentation();
@@ -66,12 +66,12 @@ namespace BookApp
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            
-                  app.UseSwaggerDocumentation();
+
+                app.UseSwaggerDocumentation();
             }
 
             app.UseCors(
-            options => 
+            options =>
             options.WithOrigins("http://localhost:3000")
             .AllowAnyMethod()
             .AllowAnyHeader());

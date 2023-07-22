@@ -3,9 +3,9 @@ using BookApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BookApp.Errors;
-using AutoMapper;
 using BookApp.DTos;
 using BookApp.Services;
+using Mapster;
 
 namespace BookApp.Controllers
 {
@@ -15,17 +15,17 @@ namespace BookApp.Controllers
     public class BookController : ControllerBase
     {
              public UserService _userService;
-        private readonly IMapper _mapper;
+       
         private readonly ApplicationDbContext _dbcontext;
         public BookController(
             ApplicationDbContext context, 
-        IMapper mapper,
+  
         UserService userService
         
         )
         {
             _dbcontext = context;
-            _mapper = mapper;
+         
             _userService = userService;
 
         }
@@ -36,7 +36,7 @@ namespace BookApp.Controllers
                 return NotFound(new ApiResponse(404));
 
             var books = await _dbcontext.Books.ToListAsync();
-            var bookDtos = _mapper.Map<IEnumerable<BookDto>>(books);
+            var bookDtos = books.Adapt<BookDto>();
 
             var responseBody = new
             {
@@ -54,7 +54,7 @@ namespace BookApp.Controllers
             if (_dbcontext.Books == null) return NotFound(new ApiResponse(404));
 
             var book = await _dbcontext.Books.FindAsync(id);
-            var bookDtos = _mapper.Map<BookDto>(book);
+            var bookDtos = book.Adapt<BookDto>();
             if (book == null) return NotFound(new ApiResponse(404));
 
             var responseBody = new
@@ -69,15 +69,15 @@ namespace BookApp.Controllers
         }
         [HttpPost("create")]
         public async Task<ActionResult<Book>> CreateBook(BookDto bookDto)
-        {
+          {
             var currentUser = await _userService.GetCurrentUser();
             bookDto.UserId = currentUser.Id;
-             var book = _mapper.Map<Book>(bookDto); // Map BookDto to Book entity
+
+            var book = bookDto.Adapt<Book>(); // Map BookDto to Book entity
             _dbcontext.Books.Add(book);
             await _dbcontext.SaveChangesAsync();
 
             return Ok();
-
         }
 
         [HttpPut("update/{id}")]
