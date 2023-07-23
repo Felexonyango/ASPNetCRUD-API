@@ -24,6 +24,12 @@ namespace BookApp.Extensions
                 .NewConfig()
                 .TwoWays()
                 .MaxDepth(1); // Set the maximum depth to 1 to avoid circular references
+
+                
+            TypeAdapterConfig<CommentDto, Comment>
+                .NewConfig()
+                .TwoWays()
+                .MaxDepth(1); // Set the maximum depth to 1 to avoid circular references
         }
     }
 }
