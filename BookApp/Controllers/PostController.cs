@@ -17,7 +17,7 @@ namespace BookApp.Controllers
         private readonly ILogger<PostController> _logger;
         public PostService _PostService;
         public UserService _userService;
-       
+
         public PostController(
             PostService postService,
          ILogger<PostController> logger,
@@ -26,27 +26,27 @@ namespace BookApp.Controllers
             _PostService = postService;
             _userService = userService;
             _logger = logger;
-          
+
 
         }
 
 
         [HttpPost("create-post")]
-        public async Task<ActionResult<Post>> AddPost(Post post)
+        public async Task<ActionResult<PostDto>> AddPost(PostDto postdto)
         {
             var currentUser = await _userService.GetCurrentUser();
 
-            _logger.LogInformation("Current User: {name}", currentUser.Name); // Log the currentUser
+
             if (currentUser == null)
             {
                 return Unauthorized(new ApiResponse(401, "User not authenticated."));
             }
+            var post = postdto.Adapt<Post>();
 
             await _PostService.AddPost(post, currentUser);
 
             return Ok();
         }
-
 
 
 
@@ -59,25 +59,25 @@ namespace BookApp.Controllers
             return Ok(allposts);
         }
         [HttpGet("post/{id}")]
- public async Task<ActionResult<PostDto>> GetPost(int id)
-{
-    var post = await _PostService.GetPostById(id);
+        public async Task<ActionResult<PostDto>> GetPost(int id)
+        {
+            var post = await _PostService.GetPostById(id);
 
-    if (post == null)
-    {
-        return NotFound(new ApiResponse(404));
-    }
+            if (post == null)
+            {
+                return NotFound(new ApiResponse(404));
+            }
 
-    var postDto = post.Adapt<PostDto>();
+            var postDto = post.Adapt<PostDto>();
 
-    var responseBody = new
-    {
-        message = "Successfully retrieved post",
-        result = postDto
-    };
+            var responseBody = new
+            {
+                message = "Successfully retrieved post",
+                result = postDto
+            };
 
-    return Ok(responseBody);
-}
+            return Ok(responseBody);
+        }
 
         [HttpDelete("delete/{id}")]
 

@@ -7,6 +7,7 @@ using System.Text;
 using BookApp.auth;
 using BookApp.Extensions;
 using Mapster;
+using BookApp.midleware;
 
 namespace BookApp
 {
@@ -54,7 +55,8 @@ namespace BookApp
             services.AddTransient<PostService>();
             services.AddTransient<CommentService>();
             services.AddScoped<JwtUtil>();
-
+// ***** Uncomment the line below only if you are using second approach *****
+     // builder.Services.AddTransient<Exceptions>();
 
             services.AddControllers();
             services.AddSwaggerDocumentation();
@@ -82,7 +84,8 @@ namespace BookApp
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+           // This line is common for both approaches
+          app.UseMiddleware<Exceptions>();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
