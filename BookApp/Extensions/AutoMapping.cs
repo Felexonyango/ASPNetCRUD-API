@@ -30,6 +30,11 @@ namespace BookApp.Extensions
                 .NewConfig()
                 .TwoWays()
                 .MaxDepth(1); // Set the maximum depth to 1 to avoid circular references
+
+                 TypeAdapterConfig<FileUploadDTo, FileUpload>
+                .NewConfig()
+                .TwoWays()
+                .MaxDepth(1); // Set the maximum depth to 1 to avoid circular references
         }
     }
 }
