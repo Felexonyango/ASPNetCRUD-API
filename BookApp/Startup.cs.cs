@@ -55,6 +55,7 @@ namespace BookApp
             services.AddTransient<PostService>();
             services.AddTransient<CommentService>();
             services.AddTransient<BufferedFileUploadLocalService>();
+            services.AddTransient<StockService>();
             services.AddScoped<JwtUtil>();
 // ***** Uncomment the line below only if you are using second approach *****
      // builder.Services.AddTransient<Exceptions>();

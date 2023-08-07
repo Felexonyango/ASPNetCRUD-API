@@ -19,5 +19,6 @@ namespace BookApp.Models
         
         // Navigation property for the User who created this product
         public User User { get; set; }
+        public List<Stock> Stock { get; set;}=new ();
     }
 }
